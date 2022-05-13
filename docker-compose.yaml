@@ -1,0 +1,80 @@
+version: '3.7'
+services:
+  api:
+    container_name: api_node
+    hostname: api_node
+    build: api_node/.
+    environment:
+      - AWS_ACCESS_KEY_ID=complete_me
+      - AWS_SECRET_ACCESS_KEY=complete_me
+      - AWS_TOPIC_ARN=complete_me
+    networks: 
+      - metanet-private
+    cpus: 1
+    mem_limit: 64m
+    restart: always
+  nginx:
+    image: nginx:1.21.6-alpine
+    hostname: nginx
+    container_name: nginx
+    volumes: 
+      - $PWD/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - $PWD/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - metanet-private
+      - metanet-public
+    ports:
+      - 8080:80
+    cpus: 1
+    mem_limit: 64m
+  metabase:
+    image: metabase/metabase:v0.43.0
+    hostname: metabase
+    container_name: metabase
+    environment:
+      - "MB_DB_DBNAME=metabase"
+      - "MB_DB_USER=metabase"
+      - "MB_DB_PASS=mysecretpassword"
+      - "MB_DB_PORT=5432"
+      - "MB_DB_HOST=postgres"
+      - "MB_DB_TYPE=postgres"
+    networks:
+      - metanet-private
+      - metanet-db
+    depends_on:
+      - postgres
+    cpus: 1
+    mem_limit: 2048m
+  setup:
+    image: bash:5.1.16
+    container_name: setup
+    volumes:
+      - $PWD/setup:/tmp
+    networks:
+      - metanet-private
+    depends_on:
+      - metabase
+    command: sh /tmp/metabase-setup.sh metabase:3000
+    cpus: 1
+    mem_limit: 16m
+  postgres:
+    image: postgres:14.2-alpine
+    container_name: postgres
+    hostname: postgres
+    environment:
+      - "POSTGRES_USER=metabase"
+      - "POSTGRES_DB=metabase"
+      - "POSTGRES_PASSWORD=mysecretpassword"
+    volumes:
+      - $PWD/postgres:/var/lib/postgresql/data
+    networks:
+      - metanet-db
+    cpus: 1
+    mem_limit: 128m
+networks: 
+  metanet-private:
+    driver: bridge
+  metanet-public:
+    driver: bridge
+  metanet-db:
+    driver: bridge
