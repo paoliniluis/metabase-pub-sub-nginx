@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.9'
 services:
   api:
     container_name: api_node
@@ -14,7 +14,7 @@ services:
     mem_limit: 64m
     restart: always
   nginx:
-    image: nginx:1.21.6-alpine
+    image: nginx:1.25.1-alpine
     hostname: nginx
     container_name: nginx
     volumes: 
@@ -28,7 +28,7 @@ services:
     cpus: 1
     mem_limit: 64m
   metabase:
-    image: metabase/metabase:v0.43.0
+    image: metabase/metabase:v0.47.1
     hostname: metabase
     container_name: metabase
     environment:
@@ -58,7 +58,7 @@ services:
     cpus: 1
     mem_limit: 16m
   postgres:
-    image: postgres:14.2-alpine
+    image: postgres:15.4-alpine
     container_name: postgres
     hostname: postgres
     environment:
